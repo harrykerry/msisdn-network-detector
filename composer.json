@@ -1,0 +1,18 @@
+{
+    "name": "haroldkerry/msisdn-network-detector",
+    "description": "Detects mobile network providers for given MSISDNs",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Haroldkerry\\MsisdnNetworkDetector\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Harold Kerry"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
