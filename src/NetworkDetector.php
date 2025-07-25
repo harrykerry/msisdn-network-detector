@@ -21,15 +21,25 @@ class NetworkDetector
         // Remove non numeric characters
         $msisdn = preg_replace('/\D/', '', $msisdn);
 
-        // Normalize to start with 0
+        // Handle numbers starting with 254 (international format)
         if (str_starts_with($msisdn, '254')) {
+
+            if (strlen($msisdn) !== 12) {
+                return 'Invalid Kenyan MSISDN: Wrong length for 254 format';
+            }
+
             $msisdn = '0' . substr($msisdn, 3);
-        } elseif (strlen($msisdn) === 9 && $msisdn[0] !== '0') {
-            // Likely missing leading 0
-            $msisdn = '0' . $msisdn;
         }
 
-        return $msisdn;
+        // Handle numbers starting with 0 (local format)
+        if (str_starts_with($msisdn, '0')) {
+            if (strlen($msisdn) !== 10) {
+                return 'Invalid Kenyan MSISDN: Wrong length for local format';
+            }
+            return $msisdn;
+        }
+
+         return 'Invalid MSISDN: Not a recognized Kenyan number';
     }
 
     /**
