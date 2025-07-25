@@ -22,10 +22,28 @@ use HaroldKerry\MsisdnNetworkDetector\NetworkDetector;
 
 $detector = new NetworkDetector();
 
-$cleanedNumber = $detector->cleanKenyanMsisdn('+254xxxxxxxxx');
-$network = $detector->detectKenyanNetwork($cleanedNumber);
+/**
+ * Recommended: Just use detectKenyanNetwork – it cleans and validates for you
+ */
 
-echo "Network: " . $network;
+$network = $detector->detectKenyanNetwork('+254700000000');
+echo "Network: " . $network; // Outputs: Safaricom, Airtel, etc. or 'Unknown Network'
+
+/**
+ * If you only want to clean and validate a number without detecting the network
+ */
+
+$result = $detector->detectKenyanNetwork($cleanedNumber);
+echo "Clean Result: " . $result; // Outputs: 0700000000 or error string
+
+/**
+ * To detect multiple networks from an array of MSISDNs
+ */
+$msisdns = ['+254xxxxxxxxx','073511xxxxx'];
+$networks = $detector->detectMultipleKenyanNetworks($msisdns);
+
+print_r($networks); // ['Safaricom', 'Airtel']
+
 ```
 
 ## Contributing
