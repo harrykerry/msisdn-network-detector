@@ -6,5 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'Haroldkerry\\MsisdnNetworkDetector\\' => array($baseDir . '/src'),
+    'HaroldKerry\\MsisdnNetworkDetector\\' => array($baseDir . '/src'),
 );
