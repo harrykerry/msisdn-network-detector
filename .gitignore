@@ -1,0 +1,21 @@
+# Composer
+/vendor/
+composer.lock
+
+# Environment files
+.env
+.env.*
+
+# IDE / Editor
+/.idea
+/.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PHPUnit / Coverage (if added later)
+coverage/
+.phpunit.result.cache

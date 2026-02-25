@@ -1,11 +1,13 @@
 # msisdn-network-detector
-A PHP library for detecting mobile network providers from MSISDNs based on number prefixes. Currently supports Kenyan networks.
+A PHP library for cleaning MSISDNs and detecting mobile network providers based on number prefixes.
 
-## Supported Networks
+## Supported Kenyan Networks
 - Safaricom
 - Airtel
 - Telkom
 - Equitel
+
+Non-Kenyan numbers are automatically classified a International
 
 ## Installation
 
@@ -13,7 +15,7 @@ You can install via Composer:
 
 ```bash
 composer require haroldkerry/msisdn-network-detector
-````
+```
 
 ## Usage Example
 
@@ -23,28 +25,53 @@ use HaroldKerry\MsisdnNetworkDetector\NetworkDetector;
 $detector = new NetworkDetector();
 
 /**
- * Recommended: Just use detectKenyanNetwork – it cleans and validates for you
+ * Detect Network (Recommended)
  */
 
-$network = $detector->detectKenyanNetwork('+254700000000');
-echo "Network: " . $network; // Outputs: Safaricom, Airtel, etc. or 'Unknown Network'
+
+
+$network = $detector->detectNetwork('+254700000000');
+echo "Network: " . $network; 
+// Safaricom, Airtel, Telkom, Equitel, // Unknown Kenyan Network, or International
 
 /**
- * If you only want to clean and validate a number without detecting the network
+ * Clean an MSISDN
  */
 
-$result = $detector->detectKenyanNetwork($cleanedNumber);
-echo "Clean Result: " . $result; // Outputs: 0700000000 or error string
+$cleaned = $detector->cleanMsisdn('+254 700 000 000');
+echo $cleaned; // 0700000000 (for Kenyan numbers) // 255700000000 (for international numbers)
 
 /**
- * To detect multiple networks from an array of MSISDNs
+ * Detect Multiple MSISDNs
  */
-$msisdns = ['+254xxxxxxxxx','073511xxxxx'];
-$networks = $detector->detectMultipleKenyanNetworks($msisdns);
+$msisdns = [ '+254700000000', '0735110000', '+255700000000' ];
+$results = $detector->detectMultipleNetworks($msisdns);
 
-print_r($networks); // ['Safaricom', 'Airtel']
+print_r($results); // [ '+254700000000' => 'Safaricom', '0735110000' => 'Airtel', '+255700000000' => 'International' ]
 
 ```
+
+## Kenyan Number Rules
+
+A number is treated as Kenyan if it starts with:
+
++254 254 or 0
+
+Valid Kenyan numbers are normalized to:
+
+07XXXXXXXX
+
+If the prefix does not match any known network, the result will be:
+
+Unknown Kenyan Network
+
+## International Numbers
+
+Any number that does not match Kenyan formats will:
+
+Be cleaned (digits only)
+
+Be returned as International during detection
 
 ## Contributing
 

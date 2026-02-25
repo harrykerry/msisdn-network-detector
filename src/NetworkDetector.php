@@ -9,26 +9,35 @@ class NetworkDetector
     public const AIRTEL_NETWORK = 'Airtel';
     public const TELKOM_NETWORK = 'Telkom';
     public const EQUITEL_NETWORK = 'Equitel';
+    public const INTERNATIONAL_NETWORK = 'International';
+
 
 
     /**
-     * Clean the Kenyan Msisdn and ensure correct format before checker (starts with 0, no unwanted characters etc)
-     * @param string $msisdn  Kenyan mobile number being cleaned
-     * @return string cleaned Kenyan mobile number
+     * Clean any MSISDN and normalize
+  
+     * @param string $msisdn
+     * @return string cleaned MSISDN
      */
-    public function cleanKenyanMsisdn(string $msisdn): string
+    public function cleanMsisdn(string $msisdn): string
     {
         // Remove non numeric characters
-        $msisdn = preg_replace('/\D/', '', $msisdn);
+        $msisdn = preg_replace('/[^\d\+]/', '', $msisdn);
 
-        // Handle numbers starting with 254 (international format)
+        // Kenyan numbers starting with 254
         if (str_starts_with($msisdn, '254')) {
-
             if (strlen($msisdn) !== 12) {
                 return 'Invalid Kenyan MSISDN: Wrong length for 254 format';
             }
+            return '0' . substr($msisdn, 3);
+        }
 
-            $msisdn = '0' . substr($msisdn, 3);
+        // Kenyan numbers starting with +254
+        if (str_starts_with($msisdn, '+254')) {
+            if (strlen($msisdn) !== 13) {
+                return 'Invalid Kenyan MSISDN: Wrong length for +254 format';
+            }
+            return '0' . substr($msisdn, 4);
         }
 
         // Handle numbers starting with 0 (local format)
@@ -39,46 +48,53 @@ class NetworkDetector
             return $msisdn;
         }
 
-         return 'Invalid MSISDN: Not a recognized Kenyan number';
-    }
-
-    /**
-     * Returns network name of the passed msisdn
-     * @param string $msisdn Kenyan Mobile number
-     * @return string Network name for the passed mobile number or Unknown for Invalid Kenyan number
-     * 
-     */
-
-    public function detectKenyanNetwork(string $msisdn): string
-    {
-        $msisdn = $this->cleanKenyanMsisdn($msisdn);
-
-        $numberPrefix = substr($msisdn, 0, 4);
-
-        $networkPrefixes = NetworkRegistry::getKenyanPrefixes();
-
-        foreach ($networkPrefixes as $network => $networkPrefixes) {
-            if (in_array($numberPrefix, $networkPrefixes)) {
-
-                return  $network;
-            }
+        // For international numbers, remove any leading + and keep digits
+        if (str_starts_with($msisdn, '+')) {
+            $msisdn = substr($msisdn, 1);
         }
 
-        return 'Unknown Network';
+        // Only digits remain
+        $msisdn = preg_replace('/\D/', '', $msisdn);
+
+        return $msisdn;
+    }
+
+    /**
+    /**
+     * Detects the network of a number
+     * @param string $msisdn
+     * @return string Network name or International if not Kenyan
+     */
+    public function detectNetwork(string $msisdn): string
+    {
+        $cleaned = $this->cleanMsisdn($msisdn);
+
+        if (str_starts_with($cleaned, '0')) {
+            $prefix = substr($cleaned, 0, 4);
+            $networkPrefixes = NetworkRegistry::getKenyanPrefixes();
+            foreach ($networkPrefixes as $network => $prefixes) {
+                if (in_array($prefix, $prefixes)) {
+                    return $network;
+                }
+            }
+            return 'Unknown Kenyan Network';
+        }
+
+        // Otherwise, international
+        return self::INTERNATIONAL_NETWORK;
     }
 
 
     /**
-     * Returns network names of the passed msisdns
-     * @param array $msisdns Kenyan Mobile numbers
-     * @return array Network names for the passed mobile number or Unknown for Invalid Kenyan numbers
+     * Detects networks for multiple MSISDNs
+     * @param array $msisdns
+     * @return array
      */
-
-    public function detectMultipleKenyanNetworks(array $msisdns): array
+    public function detectMultipleNetworks(array $msisdns): array
     {
         $results = [];
         foreach ($msisdns as $msisdn) {
-            $results[$msisdn] = $this->detectKenyanNetwork($this->cleanKenyanMsisdn($msisdn));
+            $results[$msisdn] = $this->detectNetwork($msisdn);
         }
         return $results;
     }
